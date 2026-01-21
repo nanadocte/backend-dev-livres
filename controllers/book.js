@@ -1,9 +1,15 @@
 const Book = require('../models/Book')
 
-exports.createBook = async (req, res, next)=>{
+exports.createBook = async (req, res, next)=>{console.log(req.body);
+console.log(req.file);
     try {
-        const {_id, ...data} = req.body
-        const book = new Book (data)
+       const bookObject = JSON.parse(req.body.book);
+        delete bookObject._id;
+
+        const book = new Book({
+            ...bookObject,
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    });
         await book.save()
         res.status(201).json({message : 'Objet enregistré'})
   }catch(error){
