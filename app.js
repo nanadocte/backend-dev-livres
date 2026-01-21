@@ -1,23 +1,40 @@
 const express = require('express')
 const app = express()
+app.use(express.json());
 
-app.use((req, res, next)=> {
-    console.log("Requête reçue")
-    next()
-})
 
-app.use((req, res, next)=>{
-    res.status(201)
-    next()
-})
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  next();
+});
 
-app.use((req, res, next)=>{
-    res.json({message : 'Votre requête a bien été reçue'})
-    next()
-})
+app.get('/api/books', (req, res, next) => {
+  const books = [
+    {
+      _id: 'oeihfzeoi',
+      title: 'Mon premier objet',
+      description: 'Les infos de mon premier objet',
+      imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
+      userId: 'qsomihvqios',
+    },
+    {
+      _id: 'oeihfzeomoihi',
+      title: 'Mon deuxième objet',
+      description: 'Les infos de mon deuxième objet',
+      imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
+      userId: 'qsomihvqios',
+    },
+  ];
+  res.status(200).json(books);
+  next()
+});
 
-app.use((req, res, next)=>{
-    console.log("La réponse a été envoyé avec succès")
+app.post('api/books', (req, res, next)=>{
+    console.log(req.body);
+    res.status(201).json({message : 'Objet crée'})
+
 })
 
 module.exports = app
