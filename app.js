@@ -1,7 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose');
+const bookRoutes = require('./routes/book')
 const app = express()
-const Book = require('./models/Book')
 
 mongoose.connect('mongodb+srv://projetbook:projetbook@cluster0.ghzbosi.mongodb.net/?appName=Cluster0',)
   .then(() => console.log('Connexion à MongoDB réussie !'))
@@ -20,51 +20,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/api/books', async (req, res, next) => {
-    try {
-         const books = await Book.find()
-         res.status(200).json(books)
-    }catch(error){
-        res.status(400).json({error})
-    }});
 
+app.use('/api/books', bookRoutes)
 
-app.get('/api/books/:id', async (req, res, next)=> {
-    try {
-        const book = await Book.findOne({_id: req.params.id})
-        res.status(200).json(book)
-    }catch(error){
-        res.status(400).json({error})
-    }
-})
-
-app.put('/api/books/:id', async(req, res, next)=> {
-    try{
-        await Book.updateOne({ _id : req.params.id}, {...req.body, _id : req.params.id}) 
-        res.status(200).json({message : 'Livre modifié'})
-    }catch(error){
-        res.status(400).json({error})
-    }
-})
-
-app.delete('api/books/:id', async(req, res, next)=> {
-    try{
-        await Book.deleteOne({_id : req.params.id})
-        res.status(200).json({message : 'Livre supprimé'})
-    }catch(error){
-        res.status(400).json({error})
-    }
-})
-
-app.post('/api/books', async (req, res, next)=>{
-    try {
-        const {_id, ...data} = req.body
-        const book = new Book (data)
-        await book.save()
-        res.status(201).json({message : 'Objet enregistré'})
-  }catch(error){
-        res.status(400).json({error})
-
-}})
 
 module.exports = app
