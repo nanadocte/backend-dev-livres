@@ -1,9 +1,9 @@
 const express = require('express')
 const mongoose = require('mongoose');
 const app = express()
+const Book = require('./models/Book')
 
-mongoose.connect('mongodb+srv://projetbook:projetbook@cluster0.ghzbosi.mongodb.net/?appName=Cluster0',
-  )
+mongoose.connect('mongodb+srv://projetbook:projetbook@cluster0.ghzbosi.mongodb.net/?appName=Cluster0',)
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch((error) => {
     console.error('La connexion a échoué') 
@@ -20,31 +20,33 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/api/books', (req, res, next) => {
-  const books = [
-    {
-      _id: 'oeihfzeoi',
-      title: 'Mon premier objet',
-      description: 'Les infos de mon premier objet',
-      imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
-      userId: 'qsomihvqios',
-    },
-    {
-      _id: 'oeihfzeomoihi',
-      title: 'Mon deuxième objet',
-      description: 'Les infos de mon deuxième objet',
-      imageUrl: 'https://cdn.pixabay.com/photo/2019/06/11/18/56/camera-4267692_1280.jpg',
-      userId: 'qsomihvqios',
-    },
-  ];
-  res.status(200).json(books);
-  next()
-});
+app.get('/api/books', async (req, res, next) => {
+    try {
+         const books = await Book.find()
+         res.status(200).json(books)
+    }catch(error){
+        res.status(400).json({error})
+    }});
 
-app.post('/api/books', (req, res, next)=>{
-    console.log(req.body);
-    res.status(201).json({message : 'Objet crée'})
 
+app.get('/api/books/:id', async (req, res, next)=> {
+    try {
+        const book = await Book.findOne({_id: req.params.id})
+        res.status(200).json(book)
+    }catch(error){
+        res.status(400).json({error})
+    }
 })
+
+app.post('/api/books', async (req, res, next)=>{
+     try {
+    const {_id, ...data} = req.body
+    const book = new Book (data)
+    await book.save()
+    res.status(201).json({message : 'Objet enregistré'})
+  }catch(error){
+    res.status(400).json({error})
+
+}})
 
 module.exports = app
