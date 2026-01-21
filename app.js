@@ -1,6 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose');
 const bookRoutes = require('./routes/book')
+const userRoutes = require('./routes/user');
 const app = express()
 
 mongoose.connect('mongodb+srv://projetbook:projetbook@cluster0.ghzbosi.mongodb.net/?appName=Cluster0',)
@@ -22,6 +23,6 @@ app.use((req, res, next) => {
 
 
 app.use('/api/books', bookRoutes)
-
+app.use('/api/auth', userRoutes);
 
 module.exports = app
