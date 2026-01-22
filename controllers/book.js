@@ -36,8 +36,19 @@ exports.getOneBook = async (req, res, next)=> {
 
 exports.modifyBook = async(req, res, next)=> {
     try{
-        await Book.updateOne({ _id : req.params.id}, {...req.body, _id : req.params.id}) 
+        const bookObject = req.file ? {
+            ...JSON.parse(req.body.book),
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+   } : { ...req.body };
+        delete bookObject._userId
+        const book = await Book.findOne({_id : req.params.id})
+        if (book.userId != req.auth.userId){
+            res.status(401).json({ message : 'Not authorized'});
+        }
+        else await Book.updateOne({ _id : req.params.id}, {...bookObject, _id : req.params.id}) 
         res.status(200).json({message : 'Livre modifié'})
+        
+        
     }catch(error){
         res.status(400).json({error})
     }
