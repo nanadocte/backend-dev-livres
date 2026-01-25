@@ -63,9 +63,8 @@ exports.modifyBook = async(req, res, next)=> {
 exports.addRating = async (req, res, next) => {
     try {
         const idBook = req.params.id
-        console.log(idBook)
         const book = await Book.findOne({_id: idBook});
-        const grade = req.body.rating
+
         const userRateExist = book.ratings.some((rating) => rating.userId === req.auth.userId);
        
         if (userRateExist) 
@@ -73,7 +72,7 @@ exports.addRating = async (req, res, next) => {
 
         const newRate = {
             userId: req.auth.userId,
-            grade: grade
+            grade: req.body.rating
         };
         book.ratings.push(newRate)
         await book.save()
@@ -102,5 +101,13 @@ exports.deleteBook = async(req, res, next)=> {
         
     }catch(error){
         res.status(500).json({error})
+    }
+}
+exports.getBestRating = async(req, res, next)=> {
+    try {
+      const bestRate = await Book.find().sort({averageRating:-1}).limit(3)
+        res.status(200).json(bestRate)
+    }catch(error){
+        res.status(400).json({error})
     }
 }
