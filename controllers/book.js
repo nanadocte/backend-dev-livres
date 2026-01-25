@@ -1,4 +1,10 @@
+const { userInfo } = require('os');
 const Book = require('../models/Book')
+const fs = require('fs');
+
+
+
+
 
 exports.createBook = async (req, res, next)=>{console.log(req.body);
 console.log(req.file);
@@ -54,11 +60,47 @@ exports.modifyBook = async(req, res, next)=> {
     }
 }
 
+exports.addRating = async (req, res, next) => {
+    try {
+        const idBook = req.params.id
+        console.log(idBook)
+        const book = await Book.findOne({_id: idBook});
+        const grade = req.body.rating
+        const userRateExist = book.ratings.some((rating) => rating.userId === req.auth.userId);
+       
+        if (userRateExist) 
+           { return res.status(404).json({ message: `L'utilisateur a déjà ajouté une note à ce livre` });}
+
+        const newRate = {
+            userId: req.auth.userId,
+            grade: grade
+        };
+        book.ratings.push(newRate)
+        await book.save()
+
+        const totalRatings = book.ratings.reduce((acc, curr)=> acc + curr.grade, 0)
+        book.averageRating = totalRatings/book.ratings.length
+        await book.save()
+        res.status(200).json(book);
+    } catch (error) {
+        console.error(error)
+        res.status(404).json({ error });
+    }
+};
+
+
 exports.deleteBook = async(req, res, next)=> {
     try{
-        await Book.deleteOne({_id : req.params.id})
-        res.status(200).json({message : 'Livre supprimé'})
+        const book = await  Book.findOne({_id : req.params.id})
+        if (book.userId != req.auth.userId)
+            return res.status(403).json({message : "Utilisateur non autorisé"})
+        const fileName = book.imageUrl.split('/images')[1]
+         fs.unlink(`images/${fileName}`, async ()=> {
+            await Book.deleteOne({_id : req.params.id})
+            res.status(200).json({message : 'Livre supprimé'})
+        })
+        
     }catch(error){
-        res.status(400).json({error})
+        res.status(500).json({error})
     }
 }
