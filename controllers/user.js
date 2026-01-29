@@ -11,9 +11,11 @@ exports.signup = async (req, res, next) => {
     })
     await user.save()
     res.status(201).json({ message: 'Utilisateur créé !' })
-
   } catch (error) {
-    res.status(400).json({ error })
+    if (error.code===11000){
+      return res.status(400).json({error : "Adresse mail déjà utilisée"})
+    }
+    res.status(400).json({error})
   }
 }
 
